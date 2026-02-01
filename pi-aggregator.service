@@ -1,0 +1,15 @@
+[Unit]
+Description=Pi Content Aggregator
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/Code Projects/pi-content-aggregator
+Environment=PATH=/home/pi/Code Projects/pi-content-aggregator/venv/bin
+ExecStart=/home/pi/Code Projects/pi-content-aggregator/venv/bin/python run.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

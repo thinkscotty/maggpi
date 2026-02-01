@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Scraping Logs - Pi Content Aggregator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('admin.dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
+    <h1>Scraping Logs</h1>
+</div>
+
+<section class="admin-section">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Source</th>
+                <th>Topic</th>
+                <th>Status</th>
+                <th>Items</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs.items %}
+            <tr>
+                <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') if log.created_at else '' }}</td>
+                <td>{{ log.source.display_name if log.source else 'N/A' }}</td>
+                <td>{{ log.topic.display_name if log.topic else 'N/A' }}</td>
+                <td>
+                    <span class="status-badge {{ log.status }}">{{ log.status }}</span>
+                </td>
+                <td>{{ log.items_fetched }}</td>
+                <td class="message-cell">{{ log.message or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No logs available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if logs.pages > 1 %}
+    <nav class="pagination">
+        {% if logs.has_prev %}
+            <a href="{{ url_for('admin.logs', page=logs.prev_num) }}" class="btn btn-small">&larr; Previous</a>
+        {% endif %}
+
+        <span class="page-info">Page {{ logs.page }} of {{ logs.pages }}</span>
+
+        {% if logs.has_next %}
+            <a href="{{ url_for('admin.logs', page=logs.next_num) }}" class="btn btn-small">Next &rarr;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}

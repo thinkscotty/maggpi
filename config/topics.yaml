@@ -1,0 +1,36 @@
+topics:
+  - name: tech_news
+    display_name: "Tech News"
+    description: "Latest technology headlines and updates"
+    enabled: true
+    refresh_hours: 4
+
+  - name: world_news
+    display_name: "World News"
+    description: "Major global news stories"
+    enabled: true
+    refresh_hours: 4
+
+  - name: science
+    display_name: "Science"
+    description: "Scientific discoveries and research"
+    enabled: true
+    refresh_hours: 6
+
+  - name: daily_quote
+    display_name: "Daily Quote"
+    description: "Inspirational quotes to start your day"
+    enabled: true
+    refresh_hours: 24
+
+  - name: fun_facts
+    display_name: "Fun Facts"
+    description: "Random interesting facts"
+    enabled: true
+    refresh_hours: 12
+
+  - name: weather
+    display_name: "Weather"
+    description: "Local weather updates"
+    enabled: true
+    refresh_hours: 2

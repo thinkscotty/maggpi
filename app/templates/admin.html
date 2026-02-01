@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Pi Content Aggregator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">Manage topics, sources, and monitor scraping</p>
+</div>
+
+<div class="admin-grid">
+    <section class="admin-card">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <form action="{{ url_for('admin.manual_refresh') }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-primary">Refresh All Topics</button>
+            </form>
+            <a href="{{ url_for('admin.topics_list') }}" class="btn btn-secondary">Manage Topics</a>
+            <a href="{{ url_for('admin.sources_list') }}" class="btn btn-secondary">Manage Sources</a>
+        </div>
+    </section>
+
+    <section class="admin-card">
+        <h2>Topics ({{ topics | length }})</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Refresh</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for topic in topics %}
+                <tr>
+                    <td>{{ topic.display_name }}</td>
+                    <td>
+                        <span class="status-badge {{ 'active' if topic.enabled else 'inactive' }}">
+                            {{ 'Active' if topic.enabled else 'Disabled' }}
+                        </span>
+                    </td>
+                    <td>Every {{ topic.refresh_hours }}h</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">No topics configured</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.topics_list') }}" class="btn btn-small">Manage Topics</a>
+    </section>
+
+    <section class="admin-card">
+        <h2>Sources ({{ sources | length }})</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for source in sources %}
+                <tr>
+                    <td>{{ source.display_name }}</td>
+                    <td>{{ source.source_type }}</td>
+                    <td>
+                        <span class="status-badge {{ 'active' if source.enabled else 'inactive' }}">
+                            {{ 'Active' if source.enabled else 'Disabled' }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3">No sources configured</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.sources_list') }}" class="btn btn-small">Manage Sources</a>
+    </section>
+
+    <section class="admin-card wide">
+        <h2>Recent Activity</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Source</th>
+                    <th>Topic</th>
+                    <th>Status</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.created_at.strftime('%b %d, %H:%M') if log.created_at else '' }}</td>
+                    <td>{{ log.source.display_name if log.source else 'N/A' }}</td>
+                    <td>{{ log.topic.display_name if log.topic else 'N/A' }}</td>
+                    <td>
+                        <span class="status-badge {{ log.status }}">{{ log.status }}</span>
+                    </td>
+                    <td>{{ log.items_fetched }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">No recent activity</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.logs') }}" class="btn btn-small">View All Logs</a>
+    </section>
+</div>
+{% endblock %}

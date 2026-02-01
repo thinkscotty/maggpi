@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Topics - Pi Content Aggregator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('admin.dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
+    <h1>Manage Topics</h1>
+</div>
+
+<section class="admin-section">
+    <h2>Add New Topic</h2>
+    <form action="{{ url_for('admin.add_topic') }}" method="post" class="admin-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Topic ID</label>
+                <input type="text" id="name" name="name" required
+                       placeholder="e.g., tech_news" pattern="[a-z0-9_]+">
+                <small>Lowercase letters, numbers, and underscores only</small>
+            </div>
+            <div class="form-group">
+                <label for="display_name">Display Name</label>
+                <input type="text" id="display_name" name="display_name" required
+                       placeholder="e.g., Tech News">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description"
+                       placeholder="Brief description of this topic">
+            </div>
+            <div class="form-group">
+                <label for="refresh_hours">Refresh Interval (hours)</label>
+                <input type="number" id="refresh_hours" name="refresh_hours"
+                       value="4" min="1" max="24">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Topic</button>
+    </form>
+</section>
+
+<section class="admin-section">
+    <h2>Existing Topics</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Refresh</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for topic in topics %}
+            <tr>
+                <td>
+                    <strong>{{ topic.display_name }}</strong>
+                    <br><small>{{ topic.name }}</small>
+                </td>
+                <td>{{ topic.description or '-' }}</td>
+                <td>{{ topic.refresh_hours }}h</td>
+                <td>
+                    <span class="status-badge {{ 'active' if topic.enabled else 'inactive' }}">
+                        {{ 'Active' if topic.enabled else 'Disabled' }}
+                    </span>
+                </td>
+                <td class="actions-cell">
+                    <form action="{{ url_for('admin.toggle_topic', topic_id=topic.id) }}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-small">
+                            {{ 'Disable' if topic.enabled else 'Enable' }}
+                        </button>
+                    </form>
+                    <form action="{{ url_for('admin.delete_topic', topic_id=topic.id) }}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Delete topic {{ topic.display_name }}?');">
+                        <button type="submit" class="btn btn-small btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">No topics configured. Add one above!</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

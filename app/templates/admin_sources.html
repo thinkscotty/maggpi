@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Sources - Pi Content Aggregator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('admin.dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
+    <h1>Manage Sources</h1>
+</div>
+
+<section class="admin-section">
+    <h2>Add New Source</h2>
+    <form action="{{ url_for('admin.add_source') }}" method="post" class="admin-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Source ID</label>
+                <input type="text" id="name" name="name" required
+                       placeholder="e.g., hackernews" pattern="[a-z0-9_]+">
+                <small>Lowercase letters, numbers, and underscores only</small>
+            </div>
+            <div class="form-group">
+                <label for="display_name">Display Name</label>
+                <input type="text" id="display_name" name="display_name" required
+                       placeholder="e.g., Hacker News">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="source_type">Source Type</label>
+                <select id="source_type" name="source_type" required>
+                    <option value="api">API (JSON)</option>
+                    <option value="rss">RSS Feed</option>
+                    <option value="html">HTML Page</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="weight">Weight (0.1 - 1.0)</label>
+                <input type="number" id="weight" name="weight"
+                       value="1.0" min="0.1" max="1.0" step="0.1">
+                <small>Higher weight = prioritized in summaries</small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="url">URL</label>
+            <input type="url" id="url" name="url" required
+                   placeholder="https://example.com/api/feed">
+        </div>
+        <div class="form-group">
+            <label>Associated Topics</label>
+            <div class="checkbox-group">
+                {% for topic in topics %}
+                <label class="checkbox-label">
+                    <input type="checkbox" name="topics" value="{{ topic.id }}">
+                    {{ topic.display_name }}
+                </label>
+                {% else %}
+                <p>No topics available. <a href="{{ url_for('admin.topics_list') }}">Create a topic first</a>.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Source</button>
+    </form>
+</section>
+
+<section class="admin-section">
+    <h2>Existing Sources</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Topics</th>
+                <th>Weight</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source in sources %}
+            <tr>
+                <td>
+                    <strong>{{ source.display_name }}</strong>
+                    <br><small>{{ source.name }}</small>
+                    <br><small class="url-preview">{{ source.url[:50] }}{% if source.url|length > 50 %}...{% endif %}</small>
+                </td>
+                <td>{{ source.source_type }}</td>
+                <td>
+                    {% set topic_names = [] %}
+                    {% for st in source.topics %}
+                        {% if st.topic %}
+                            {{ st.topic.display_name }}{% if not loop.last %}, {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ source.weight }}</td>
+                <td>
+                    <span class="status-badge {{ 'active' if source.enabled else 'inactive' }}">
+                        {{ 'Active' if source.enabled else 'Disabled' }}
+                    </span>
+                </td>
+                <td class="actions-cell">
+                    <form action="{{ url_for('admin.toggle_source', source_id=source.id) }}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-small">
+                            {{ 'Disable' if source.enabled else 'Enable' }}
+                        </button>
+                    </form>
+                    <form action="{{ url_for('admin.delete_source', source_id=source.id) }}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Delete source {{ source.display_name }}?');">
+                        <button type="submit" class="btn btn-small btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No sources configured. Add one above!</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

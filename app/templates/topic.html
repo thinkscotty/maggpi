@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.display_name }} - Pi Content Aggregator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('main.index') }}" class="back-link">&larr; Back to Home</a>
+    <h1>{{ topic.display_name }}</h1>
+    {% if topic.description %}
+        <p class="subtitle">{{ topic.description }}</p>
+    {% endif %}
+</div>
+
+<section class="topic-detail">
+    <div class="summary-section">
+        <h2>Summary</h2>
+        {% if summary %}
+            <div class="summary-content large">
+                {{ summary.content | safe }}
+            </div>
+            <p class="meta">
+                Based on {{ summary.item_count }} items from: {{ summary.sources_used | join(', ') if summary.sources_used else 'N/A' }}
+                <br>
+                Last updated: {{ summary.created_at.strftime('%B %d, %Y at %H:%M') if summary.created_at else 'Never' }}
+            </p>
+        {% else %}
+            <p class="no-content">No summary available yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="items-section">
+        <h2>Recent Items</h2>
+        {% if items %}
+            <ul class="content-list">
+                {% for item in items %}
+                    <li class="content-item">
+                        <h3>
+                            {% if item.url %}
+                                <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title or 'Untitled' }}</a>
+                            {% else %}
+                                {{ item.title or 'Untitled' }}
+                            {% endif %}
+                        </h3>
+                        {% if item.content %}
+                            <p class="item-content">{{ item.content[:300] }}{% if item.content|length > 300 %}...{% endif %}</p>
+                        {% endif %}
+                        <p class="item-meta">
+                            <span class="source">{{ item.source.display_name if item.source else 'Unknown' }}</span>
+                            {% if item.author %}
+                                <span class="author">by {{ item.author }}</span>
+                            {% endif %}
+                            <span class="date">{{ item.scraped_at.strftime('%b %d, %H:%M') if item.scraped_at else '' }}</span>
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-content">No items collected yet.</p>
+        {% endif %}
+    </div>
+</section>
+
+<div class="actions">
+    <form action="{{ url_for('admin.refresh_topic', topic_name=topic.name) }}" method="post">
+        <button type="submit" class="btn btn-primary">Refresh This Topic</button>
+    </form>
+</div>
+{% endblock %}

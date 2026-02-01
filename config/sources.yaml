@@ -1,0 +1,83 @@
+sources:
+  # Tech News Sources
+  - name: hackernews
+    display_name: "Hacker News"
+    type: api
+    url: "https://hacker-news.firebaseio.com/v0/"
+    topics: [tech_news]
+    weight: 0.9
+    enabled: true
+
+  - name: reddit_technology
+    display_name: "Reddit Technology"
+    type: rss
+    url: "https://www.reddit.com/r/technology.rss"
+    topics: [tech_news]
+    weight: 0.7
+    enabled: true
+
+  # World News Sources
+  - name: bbc_world
+    display_name: "BBC World"
+    type: rss
+    url: "https://feeds.bbci.co.uk/news/world/rss.xml"
+    topics: [world_news]
+    weight: 0.9
+    enabled: true
+
+  - name: reuters_world
+    display_name: "Reuters World"
+    type: rss
+    url: "https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best"
+    topics: [world_news]
+    weight: 0.8
+    enabled: true
+
+  # Science Sources
+  - name: reddit_science
+    display_name: "Reddit Science"
+    type: rss
+    url: "https://www.reddit.com/r/science.rss"
+    topics: [science]
+    weight: 0.8
+    enabled: true
+
+  - name: sciencedaily
+    display_name: "Science Daily"
+    type: rss
+    url: "https://www.sciencedaily.com/rss/all.xml"
+    topics: [science]
+    weight: 0.9
+    enabled: true
+
+  # Quote Sources
+  - name: quotable
+    display_name: "Quotable API"
+    type: api
+    url: "https://api.quotable.io/"
+    topics: [daily_quote]
+    weight: 1.0
+    enabled: true
+
+  # Facts Sources
+  - name: useless_facts
+    display_name: "Useless Facts"
+    type: api
+    url: "https://uselessfacts.jsph.pl/api/v2/facts/random"
+    topics: [fun_facts]
+    weight: 0.8
+    enabled: true
+    config:
+      field_map:
+        content: text
+        external_id: id
+        url: source_url
+
+  # Weather (requires API key in .env)
+  - name: openweathermap
+    display_name: "OpenWeatherMap"
+    type: api
+    url: "https://api.openweathermap.org/data/2.5/weather"
+    topics: [weather]
+    weight: 1.0
+    enabled: true

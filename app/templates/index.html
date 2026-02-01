@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Pi Content Aggregator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Your Daily Digest</h1>
+    <p class="subtitle">Curated content from across the web</p>
+</div>
+
+<div class="content-grid">
+    {% for data in topic_data %}
+        <article class="topic-card">
+            <header>
+                <h2>{{ data.topic.display_name }}</h2>
+                {% if data.topic.description %}
+                    <p class="description">{{ data.topic.description }}</p>
+                {% endif %}
+            </header>
+
+            <div class="card-content">
+                {% if data.summary %}
+                    <div class="summary-content">
+                        {{ data.summary.content | safe }}
+                    </div>
+                    <footer class="card-meta">
+                        <span class="sources">
+                            Sources: {{ data.summary.sources_used | join(', ') if data.summary.sources_used else 'N/A' }}
+                        </span>
+                        <span class="updated">
+                            Updated: {{ data.summary.created_at.strftime('%b %d, %H:%M') if data.summary.created_at else 'Never' }}
+                        </span>
+                    </footer>
+                {% else %}
+                    <p class="no-content">No content available yet. Content will appear after the next refresh.</p>
+                {% endif %}
+            </div>
+
+            <div class="card-actions">
+                <a href="{{ url_for('main.topic_detail', topic_name=data.topic.name) }}" class="btn btn-secondary">View Details</a>
+                <form action="{{ url_for('admin.refresh_topic', topic_name=data.topic.name) }}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-small">Refresh</button>
+                </form>
+            </div>
+        </article>
+    {% else %}
+        <div class="empty-state">
+            <h2>No Topics Configured</h2>
+            <p>Get started by adding some topics in the <a href="{{ url_for('admin.dashboard') }}">Admin Panel</a>.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
