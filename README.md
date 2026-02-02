@@ -58,10 +58,8 @@ Navigate to your home directory and clone the project from GitHub:
 
 ```bash
 cd ~
-git clone https://github.com/<your-username>/maggpi.git
+git clone https://github.com/thinkscotty/maggpi.git
 ```
-
-Replace `<your-username>` with your GitHub username.
 
 Move into the project directory:
 

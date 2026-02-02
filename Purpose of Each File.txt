@@ -1,0 +1,322 @@
+# MAGGPI - PURPOSE OF EACH FILE
+# Comprehensive guide to the application structure and file purposes
+
+================================================================================
+ROOT DIRECTORY
+================================================================================
+
+run.py
+------
+Purpose: Application entry point
+Why needed: Starts the Flask web server. When you run `python run.py`, it creates
+the Flask app and starts serving the website.
+
+requirements.txt
+----------------
+Purpose: Python dependency list
+Why needed: Tells pip which packages to install. Contains Flask, gunicorn,
+BeautifulSoup, SQLAlchemy, etc.
+
+.env.example
+------------
+Purpose: Environment variable template
+Why needed: Shows users what API keys and config they need. Users copy this to
+`.env` and fill in their actual values.
+
+maggpi.service
+--------------
+Purpose: systemd service configuration
+Why needed: Allows Maggpi to run automatically on boot and restart if it crashes.
+Manages the app as a Linux system service.
+
+README.md
+---------
+Purpose: Documentation
+Why needed: Installation instructions, troubleshooting, API docs. The first thing
+users read.
+
+
+================================================================================
+APP/ DIRECTORY (MAIN APPLICATION PACKAGE)
+================================================================================
+
+app/__init__.py
+---------------
+Purpose: Flask application factory
+Why needed: Creates and configures the Flask app, initializes the database, enables
+SQLite WAL mode, registers all routes (blueprints), and starts the scheduler. This
+is the core setup file.
+
+app/config.py
+-------------
+Purpose: Application configuration settings
+Why needed: Centralized config for database path, API keys, scraping timeouts,
+content retention, rate limits. One place to adjust all app behavior.
+
+app/models.py
+-------------
+Purpose: Database schema definitions
+Why needed: Defines the structure of your data:
+  - Topic: Tech News, Weather, etc.
+  - Source: Where content comes from (HN, RSS feeds)
+  - ContentItem: Individual scraped articles/posts
+  - Summary: AI-generated topic summaries
+  - ScrapingLog: Error tracking and monitoring
+  - SourceTopic: Links sources to topics (many-to-many)
+
+Includes database indexes for performance on Pi's limited resources.
+
+
+================================================================================
+APP/ROUTES/ DIRECTORY (WEB ROUTES/ENDPOINTS)
+================================================================================
+
+app/routes/__init__.py
+----------------------
+Purpose: Package marker
+Why needed: Makes `routes` a Python package so files can be imported.
+
+app/routes/main.py
+------------------
+Purpose: Public-facing web pages
+Why needed: Routes users see:
+  - `/` - Home page with all topic summaries
+  - `/topic/<name>` - Detailed topic view with all items
+
+Uses optimized queries to avoid N+1 problems on Raspberry Pi.
+
+app/routes/admin.py
+-------------------
+Purpose: Admin interface
+Why needed: Routes for managing the system:
+  - `/admin` - Dashboard
+  - `/admin/topics` - Add/edit/delete topics
+  - `/admin/sources` - Add/edit/delete sources
+  - `/admin/logs` - View scraping errors
+  - Manual refresh triggers
+
+app/routes/api.py
+-----------------
+Purpose: REST API endpoints
+Why needed: Programmatic access to content:
+  - GET /api/topics - List topics
+  - GET /api/content - All summaries
+  - GET /api/content/<topic> - Specific summary
+  - GET /api/raw/<topic> - Raw scraped data (max 100 items)
+  - GET /api/health - Health check
+  - GET /api/status - System stats
+
+Allows other apps/devices to consume your data.
+
+
+================================================================================
+APP/SERVICES/ DIRECTORY (BUSINESS LOGIC)
+================================================================================
+
+app/services/__init__.py
+------------------------
+Purpose: Package marker
+Why needed: Makes `services` a Python package.
+
+app/services/scraper.py
+-----------------------
+Purpose: Web scraping engine
+Why needed: Fetches content from the internet. Contains:
+  - BaseScraper: Base class with session management, deduplication, error logging,
+    and __del__ cleanup to prevent memory leaks
+  - APIScraper: Fetches from JSON APIs
+  - RSSScraper: Fetches from RSS/Atom feeds
+  - HTMLScraper: Scrapes HTML pages with CSS selectors
+  - HackerNewsScraper: Specialized HN API scraper
+  - QuotableScraper: Specialized quotes API scraper
+
+Uses `html.parser` (not lxml) to save memory on Raspberry Pi.
+
+app/services/summarizer.py
+---------------------------
+Purpose: AI summarization engine
+Why needed: Takes scraped content and uses Google Gemini to create coherent
+summaries. Includes:
+  - Content scoring/ranking
+  - Prompt engineering for Gemini
+  - Fallback simple summary if API fails
+  - Token management
+
+app/services/scheduler.py
+-------------------------
+Purpose: Background job scheduling
+Why needed: Automates recurring tasks:
+  - Scrape job: Every 4 hours, fetch new content
+  - Summarize job: Every 4.5 hours, generate AI summaries
+  - Cleanup job: Daily, delete old content (7+ days old, logs 30+ days)
+  - Startup sync: Loads YAML config on boot
+
+Uses APScheduler with Flask app context. Critical for preventing storage
+exhaustion on Pi's 32GB SD card.
+
+app/services/config_loader.py
+-----------------------------
+Purpose: YAML config file management
+Why needed: Syncs `topics.yaml` and `sources.yaml` files with the database.
+Allows users to configure via files OR web UI. Handles bidirectional sync.
+
+
+================================================================================
+APP/TEMPLATES/ DIRECTORY (HTML TEMPLATES)
+================================================================================
+
+app/templates/base.html
+-----------------------
+Purpose: Master layout template
+Why needed: Contains header, nav, footer that all pages inherit. Avoids
+duplicating HTML structure.
+
+app/templates/index.html
+------------------------
+Purpose: Home page template
+Why needed: Displays grid of topic cards with summaries.
+
+app/templates/topic.html
+------------------------
+Purpose: Topic detail page template
+Why needed: Shows full summary + list of individual content items for one topic.
+
+app/templates/admin.html
+------------------------
+Purpose: Admin dashboard template
+Why needed: Overview of topics, sources, recent logs, manual refresh buttons.
+
+app/templates/admin_topics.html
+-------------------------------
+Purpose: Topic management page
+Why needed: Form to add/edit/delete topics, toggle enabled status.
+
+app/templates/admin_sources.html
+--------------------------------
+Purpose: Source management page
+Why needed: Form to add/edit/delete sources, configure scraper types and settings.
+
+app/templates/admin_logs.html
+-----------------------------
+Purpose: Scraping logs page
+Why needed: Shows recent scrapes, errors, success rates. Helps debug scraping
+issues.
+
+
+================================================================================
+APP/STATIC/ DIRECTORY (STATIC ASSETS)
+================================================================================
+
+app/static/style.css
+--------------------
+Purpose: Application styles
+Why needed: Makes the UI look clean and modern. Responsive design for mobile.
+CSS variables for easy theming.
+
+
+================================================================================
+CONFIG/ DIRECTORY (USER CONFIGURATION)
+================================================================================
+
+config/topics.yaml
+------------------
+Purpose: Topic definitions
+Why needed: User-editable file defining what topics to track (Tech News, Weather,
+etc.) with refresh intervals and descriptions.
+
+config/sources.yaml
+-------------------
+Purpose: Source definitions
+Why needed: User-editable file defining where to scrape (HN, RSS feeds, APIs)
+with URLs, types, and scraper config.
+
+
+================================================================================
+DATA/ DIRECTORY (DATABASE)
+================================================================================
+
+data/aggregator.db
+------------------
+Purpose: SQLite database file
+Why needed: Stores all scraped content, summaries, topics, sources, logs.
+Created automatically on first run. Uses WAL mode for better concurrency
+and to reduce "database is locked" errors.
+
+
+================================================================================
+APPLICATION FLOW
+================================================================================
+
+User visits website (port 5000)
+    ↓
+run.py starts Flask app
+    ↓
+app/__init__.py creates app, loads config, starts scheduler
+    ↓
+app/routes/main.py handles web page requests
+app/routes/api.py handles API requests
+    ↓
+Both query app/models.py (database)
+    ↓
+Background: app/services/scheduler.py runs every 4 hours
+    ↓
+Calls app/services/scraper.py to fetch content
+    ↓
+Calls app/services/summarizer.py to create summaries
+    ↓
+Saves to app/models.py (database)
+    ↓
+Daily cleanup removes old content (prevents storage exhaustion)
+
+
+================================================================================
+CRITICAL FILES (DON'T DELETE!)
+================================================================================
+
+1. app/__init__.py - Breaks entire app
+2. app/models.py - Loses all data structure
+3. app/config.py - App won't know settings
+4. run.py - Can't start the app
+5. requirements.txt - Can't install dependencies
+
+
+================================================================================
+OPTIONAL/GENERATED FILES
+================================================================================
+
+1. data/aggregator.db - Regenerates automatically (but loses data)
+2. config/*.yaml - Can be recreated from admin UI
+3. .env - Must be recreated from .env.example
+
+
+================================================================================
+RASPBERRY PI OPTIMIZATIONS
+================================================================================
+
+The following optimizations were made specifically for Raspberry Pi 3B+ with
+1GB RAM and 32GB storage:
+
+1. MEMORY OPTIMIZATIONS:
+   - Uses html.parser instead of lxml (90% less memory per page)
+   - Single gunicorn worker
+   - Session cleanup in __del__ methods
+   - Request size limits on API endpoints
+
+2. STORAGE OPTIMIZATIONS:
+   - Daily cleanup job removes content older than 7 days
+   - Scraping logs cleaned up after 30 days
+   - Database indexes for faster queries
+
+3. CONCURRENCY OPTIMIZATIONS:
+   - SQLite WAL mode enabled
+   - 5-second busy timeout
+   - N+1 query problems fixed with subqueries
+
+4. PERFORMANCE OPTIMIZATIONS:
+   - Database indexes on frequently queried columns
+   - Eager loading with subqueries instead of N+1 queries
+   - Limited workers and memory caps in systemd service
+
+This architecture follows the Flask "Application Factory" pattern with clear
+separation of concerns: routes handle requests, services contain business logic,
+models define data structure, and templates render HTML.
