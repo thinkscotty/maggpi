@@ -1,13 +1,13 @@
 # Maggpi
 
-**M**y **AGG**regator for **PI** - A Python-based web application that scrapes, summarizes, and displays curated content from multiple internet sources. Designed to run on Raspberry Pi 3B+ with limited resources (1GB RAM, 32GB storage).
+**M**ini **AGG**regator for **PI** - A Python-based web application that scrapes, summarizes, and displays curated content from multiple internet sources. Designed to run on systems with limited resources.
 
 ## Features
 
 - **Multi-source scraping**: Pulls content from APIs, RSS feeds, and HTML pages
 - **AI-powered summaries**: Uses Google Gemini to create intelligent summaries
 - **Configurable topics**: Add/remove topics and sources via web UI or YAML files
-- **REST API**: Serve content to other devices on your local network
+- **REST API**: Serve content to other devices on your local network (specifically designed to serve "news ticker" devices)
 - **Lightweight**: Optimized for Raspberry Pi's limited resources
 - **Resource-efficient**: WAL mode SQLite, memory-optimized HTML parsing, automatic cleanup
 
