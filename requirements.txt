@@ -22,5 +22,8 @@ google-genai==1.61.0
 # Configuration
 PyYAML==6.0.1
 
+# Markdown rendering
+Markdown==3.7
+
 # Utilities
 python-dotenv==1.0.0

@@ -21,7 +21,7 @@
             <div class="card-content">
                 {% if data.summary %}
                     <div class="summary-content">
-                        {{ data.summary.content | safe }}
+                        {{ data.summary.content | markdown }}
                     </div>
                     <footer class="card-meta">
                         <span class="sources">

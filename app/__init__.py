@@ -5,8 +5,19 @@ Flask application factory for Maggpi.
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from markupsafe import Markup
+import markdown
 
 db = SQLAlchemy()
+
+
+def markdown_filter(text):
+    """Convert markdown text to HTML."""
+    if not text:
+        return ''
+    # Convert markdown to HTML
+    html = markdown.markdown(text, extensions=['nl2br'])
+    return Markup(html)
 
 
 def create_app():
@@ -16,6 +27,9 @@ def create_app():
     # Load configuration
     from app.config import Config
     app.config.from_object(Config)
+
+    # Register custom Jinja2 filters
+    app.jinja_env.filters['markdown'] = markdown_filter
 
     # Initialize database
     db.init_app(app)

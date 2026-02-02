@@ -16,7 +16,7 @@
         <h2>Summary</h2>
         {% if summary %}
             <div class="summary-content large">
-                {{ summary.content | safe }}
+                {{ summary.content | markdown }}
             </div>
             <p class="meta">
                 Based on {{ summary.item_count }} items from: {{ summary.sources_used | join(', ') if summary.sources_used else 'N/A' }}
