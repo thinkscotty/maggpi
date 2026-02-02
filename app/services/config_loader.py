@@ -111,7 +111,6 @@ def sync_config_to_database():
         if not source:
             source = Source(name=source_data['name'])
             db.session.add(source)
-            db.session.flush()
 
         source.display_name = source_data.get('display_name', source_data['name'])
         source.source_type = source_data.get('type', 'api')
@@ -119,6 +118,10 @@ def sync_config_to_database():
         source.enabled = source_data.get('enabled', True)
         source.weight = source_data.get('weight', 1.0)
         source.config = source_data.get('config', {})
+
+        # Flush to get the source ID for topic associations
+        if not source.id:
+            db.session.flush()
 
         # Update topic associations
         SourceTopic.query.filter_by(source_id=source.id).delete()
