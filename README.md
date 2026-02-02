@@ -217,12 +217,6 @@ python run.py
 
 ## Configuration
 
-### Weather Data
-
-This application uses **Open-Meteo** for weather data:
-- Free API with no key required
-- Documentation: https://open-meteo.com
-
 ### Topics (config/topics.yaml)
 
 Edit this file to add or modify topics:

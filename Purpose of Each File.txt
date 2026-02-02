@@ -57,7 +57,7 @@ app/models.py
 -------------
 Purpose: Database schema definitions
 Why needed: Defines the structure of your data:
-  - Topic: Tech News, Weather, etc.
+  - Topic: Tech News, Science, etc.
   - Source: Where content comes from (HN, RSS feeds)
   - ContentItem: Individual scraped articles/posts
   - Summary: AI-generated topic summaries
@@ -221,7 +221,7 @@ CONFIG/ DIRECTORY (USER CONFIGURATION)
 config/topics.yaml
 ------------------
 Purpose: Topic definitions
-Why needed: User-editable file defining what topics to track (Tech News, Weather,
+Why needed: User-editable file defining what topics to track (Tech News, Science,
 etc.) with refresh intervals and descriptions.
 
 config/sources.yaml

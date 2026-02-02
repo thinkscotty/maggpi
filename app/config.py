@@ -39,6 +39,3 @@ class Config:
     CONTENT_RETENTION_DAYS = 7  # How long to keep old content
     MAX_ITEMS_PER_SOURCE = 10  # Max items to fetch per source
     MAX_ITEMS_PER_TOPIC = 20  # Max items to display per topic
-
-    # Weather location (user should configure this)
-    WEATHER_LOCATION = os.getenv('WEATHER_LOCATION', 'New York,US')

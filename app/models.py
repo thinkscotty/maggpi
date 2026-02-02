@@ -7,7 +7,7 @@ from app import db
 
 
 class Topic(db.Model):
-    """A content topic (e.g., Tech News, Weather)."""
+    """A content topic (e.g., Tech News, Science)."""
 
     __tablename__ = 'topics'
 

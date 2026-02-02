@@ -72,12 +72,3 @@ sources:
         content: text
         external_id: id
         url: source_url
-
-  # Weather (requires API key in .env)
-  - name: openweathermap
-    display_name: "OpenWeatherMap"
-    type: api
-    url: "https://api.openweathermap.org/data/2.5/weather"
-    topics: [weather]
-    weight: 1.0
-    enabled: true

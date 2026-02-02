@@ -28,9 +28,3 @@ topics:
     description: "Random interesting facts"
     enabled: true
     refresh_hours: 12
-
-  - name: weather
-    display_name: "Weather"
-    description: "Local weather updates"
-    enabled: true
-    refresh_hours: 2
