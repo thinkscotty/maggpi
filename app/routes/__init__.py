@@ -1,1 +1,1 @@
-"""Routes package for Pi Content Aggregator."""
+"""Routes package for Maggpi."""

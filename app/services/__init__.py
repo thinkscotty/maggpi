@@ -1,1 +1,1 @@
-"""Services package for Pi Content Aggregator."""
+"""Services package for Maggpi."""

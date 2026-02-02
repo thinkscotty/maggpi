@@ -1,5 +1,5 @@
 """
-Application configuration for Pi Content Aggregator.
+Application configuration for Maggpi.
 """
 
 import os
@@ -25,8 +25,6 @@ class Config:
 
     # API Keys
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-    NEWSAPI_KEY = os.getenv('NEWSAPI_KEY', '')
-    OPENWEATHERMAP_KEY = os.getenv('OPENWEATHERMAP_KEY', '')
 
     # Configuration file paths
     TOPICS_CONFIG = BASE_DIR / 'config' / 'topics.yaml'

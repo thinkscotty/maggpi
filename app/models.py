@@ -1,5 +1,5 @@
 """
-Database models for Pi Content Aggregator.
+Database models for Maggpi.
 """
 
 from datetime import datetime
@@ -93,6 +93,11 @@ class ContentItem(db.Model):
     """A scraped content item from a source."""
 
     __tablename__ = 'content_items'
+    __table_args__ = (
+        db.Index('idx_content_items_topic_id', 'topic_id'),
+        db.Index('idx_content_items_source_id', 'source_id'),
+        db.Index('idx_content_items_scraped_at', 'scraped_at'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer, db.ForeignKey('sources.id'), nullable=False)
@@ -104,7 +109,7 @@ class ContentItem(db.Model):
     author = db.Column(db.String(200))
     published_at = db.Column(db.DateTime)
     scraped_at = db.Column(db.DateTime, default=datetime.utcnow)
-    metadata = db.Column(db.JSON)  # Additional data (e.g., score, comments)
+    extra_data = db.Column(db.JSON)  # Additional data (e.g., score, comments)
 
     def __repr__(self):
         return f'<ContentItem {self.id}: {self.title[:50] if self.title else "No title"}>'
@@ -127,6 +132,10 @@ class Summary(db.Model):
     """An AI-generated summary for a topic."""
 
     __tablename__ = 'summaries'
+    __table_args__ = (
+        db.Index('idx_summaries_topic_id', 'topic_id'),
+        db.Index('idx_summaries_created_at', 'created_at'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
@@ -154,6 +163,11 @@ class ScrapingLog(db.Model):
     """Log of scraping operations for monitoring."""
 
     __tablename__ = 'scraping_logs'
+    __table_args__ = (
+        db.Index('idx_scraping_logs_source_id', 'source_id'),
+        db.Index('idx_scraping_logs_topic_id', 'topic_id'),
+        db.Index('idx_scraping_logs_created_at', 'created_at'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     source_id = db.Column(db.Integer, db.ForeignKey('sources.id'))

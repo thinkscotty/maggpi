@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Pi Content Aggregator - Entry Point
-A web application that scrapes, summarizes, and displays curated content.
+Maggpi - Entry Point
+My AGGregator for PI - A web application that scrapes, summarizes, and displays curated content.
 """
 
 from app import create_app

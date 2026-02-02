@@ -1,0 +1,19 @@
+[Unit]
+Description=Maggpi - My Aggregator for PI
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/maggpi
+Environment=PATH=/home/pi/maggpi/venv/bin
+ExecStart=/home/pi/maggpi/venv/bin/gunicorn -w 1 -b 0.0.0.0:5000 --timeout 120 "app:create_app()"
+Restart=always
+RestartSec=10
+
+# Resource limits for Pi 3B+ (1GB RAM)
+MemoryMax=512M
+MemoryHigh=400M
+
+[Install]
+WantedBy=multi-user.target

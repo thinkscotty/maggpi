@@ -29,15 +29,27 @@ def list_sources():
 @api_bp.route('/content')
 def all_content():
     """Get all current summaries."""
+    from sqlalchemy import and_
+    from sqlalchemy.sql import func
+    from app import db
+
     topics = Topic.query.filter_by(enabled=True).all()
 
-    content = []
-    for topic in topics:
-        latest_summary = Summary.query.filter_by(topic_id=topic.id) \
-            .order_by(Summary.created_at.desc()).first()
+    # Get the latest summary for each topic in a single query
+    subq = db.session.query(
+        Summary.topic_id,
+        func.max(Summary.created_at).label('max_created')
+    ).group_by(Summary.topic_id).subquery()
 
-        if latest_summary:
-            content.append(latest_summary.to_dict())
+    latest_summaries = db.session.query(Summary).join(
+        subq,
+        and_(
+            Summary.topic_id == subq.c.topic_id,
+            Summary.created_at == subq.c.max_created
+        )
+    ).all()
+
+    content = [summary.to_dict() for summary in latest_summaries]
 
     return jsonify({
         'content': content
@@ -69,8 +81,8 @@ def raw_content(topic_name):
     if not topic:
         return jsonify({'error': 'Topic not found'}), 404
 
-    # Get recent content items
-    limit = request.args.get('limit', 20, type=int)
+    # Get recent content items (limit to max 100 to prevent abuse)
+    limit = min(request.args.get('limit', 20, type=int), 100)
     items = ContentItem.query.filter_by(topic_id=topic.id) \
         .order_by(ContentItem.scraped_at.desc()).limit(limit).all()
 
@@ -85,7 +97,7 @@ def health_check():
     """Health check endpoint."""
     return jsonify({
         'status': 'healthy',
-        'service': 'pi-content-aggregator'
+        'service': 'maggpi'
     })
 
 

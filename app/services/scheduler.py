@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from app.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,11 @@ def init_scheduler(app):
     def scheduled_summarize():
         with app.app_context():
             run_all_summarizers()
+
+    @scheduler.scheduled_job(IntervalTrigger(hours=24), id='cleanup_old')
+    def scheduled_cleanup():
+        with app.app_context():
+            cleanup_old_content()
 
     # Run initial sync and scrape on startup
     with app.app_context():

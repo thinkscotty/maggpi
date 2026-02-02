@@ -1,5 +1,5 @@
 """
-Flask application factory for Pi Content Aggregator.
+Flask application factory for Maggpi.
 """
 
 import os
@@ -19,6 +19,19 @@ def create_app():
 
     # Initialize database
     db.init_app(app)
+
+    # Configure SQLite for better concurrency (WAL mode)
+    if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+
+        @event.listens_for(Engine, "connect")
+        def set_sqlite_pragma(dbapi_conn, connection_record):
+            cursor = dbapi_conn.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA synchronous=NORMAL")
+            cursor.execute("PRAGMA busy_timeout=5000")
+            cursor.close()
 
     # Register blueprints
     from app.routes.main import main_bp

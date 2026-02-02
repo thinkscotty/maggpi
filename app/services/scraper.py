@@ -30,6 +30,11 @@ class BaseScraper(ABC):
             'User-Agent': 'PiContentAggregator/1.0 (Educational Project)'
         })
 
+    def __del__(self):
+        """Cleanup: Close the requests session."""
+        if hasattr(self, 'session') and self.session:
+            self.session.close()
+
     @abstractmethod
     def fetch(self) -> List[Dict[str, Any]]:
         """Fetch content from the source. Returns list of content items."""
@@ -64,7 +69,7 @@ class BaseScraper(ABC):
                 url=item.get('url', '')[:1000],
                 author=item.get('author', '')[:200] if item.get('author') else None,
                 published_at=item.get('published_at'),
-                metadata=item.get('metadata', {})
+                extra_data=item.get('metadata', {})
             )
             db.session.add(content_item)
             saved_count += 1
@@ -178,7 +183,7 @@ class RSSScraper(BaseScraper):
 
             # Clean HTML from content
             if content:
-                soup = BeautifulSoup(content, 'lxml')
+                soup = BeautifulSoup(content, 'html.parser')
                 content = soup.get_text(separator=' ', strip=True)
 
             items.append({
@@ -211,7 +216,7 @@ class HTMLScraper(BaseScraper):
         )
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, 'lxml')
+        soup = BeautifulSoup(response.text, 'html.parser')
 
         # Get selectors from config
         item_selector = config.get('item_selector', 'article')
@@ -328,49 +333,6 @@ class QuotableScraper(APIScraper):
         return items
 
 
-class WeatherScraper(APIScraper):
-    """Specialized scraper for OpenWeatherMap API."""
-
-    def fetch(self) -> List[Dict[str, Any]]:
-        """Fetch weather data from OpenWeatherMap."""
-        api_key = Config.OPENWEATHERMAP_KEY
-        if not api_key:
-            logger.warning('OpenWeatherMap API key not configured')
-            return []
-
-        location = Config.WEATHER_LOCATION
-
-        response = self.session.get(
-            'https://api.openweathermap.org/data/2.5/weather',
-            params={
-                'q': location,
-                'appid': api_key,
-                'units': 'imperial'
-            },
-            timeout=Config.REQUEST_TIMEOUT
-        )
-        response.raise_for_status()
-        data = response.json()
-
-        weather_desc = data['weather'][0]['description'] if data.get('weather') else 'Unknown'
-        temp = data['main']['temp'] if data.get('main') else 0
-        feels_like = data['main'].get('feels_like', temp)
-        humidity = data['main'].get('humidity', 0)
-
-        content = (
-            f"Current weather in {location}: {weather_desc.capitalize()}. "
-            f"Temperature: {temp:.0f}F (feels like {feels_like:.0f}F). "
-            f"Humidity: {humidity}%."
-        )
-
-        return [{
-            'external_id': f"weather_{location}_{datetime.now().strftime('%Y%m%d%H')}",
-            'title': f'Weather in {location}',
-            'content': content,
-            'metadata': data
-        }]
-
-
 def get_scraper(source: Source, topic_id: int) -> BaseScraper:
     """
     Get the appropriate scraper for a source.
@@ -381,8 +343,6 @@ def get_scraper(source: Source, topic_id: int) -> BaseScraper:
         'hackernews': HackerNewsScraper,
         'hacker_news': HackerNewsScraper,
         'quotable': QuotableScraper,
-        'openweathermap': WeatherScraper,
-        'weather': WeatherScraper,
     }
 
     scraper_class = specialized_scrapers.get(source.name.lower())

@@ -150,7 +150,7 @@ Summary:"""
                     score += (6 - age_hours) * 2
 
             # Metadata-based scoring (e.g., HN score)
-            metadata = item.metadata or {}
+            metadata = item.extra_data or {}
             if 'score' in metadata:
                 score += min(metadata['score'] / 10, 20)  # Cap at 20
             if 'comments' in metadata:
