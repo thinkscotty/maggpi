@@ -33,7 +33,7 @@ class GeminiSummarizer:
         try:
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
             self._initialized = True
             return True
         except Exception as e:
