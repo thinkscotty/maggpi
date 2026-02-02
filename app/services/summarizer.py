@@ -32,7 +32,11 @@ class GeminiSummarizer:
 
         try:
             from google import genai
+            from google.genai import types
+            from google.genai import errors
             self.client = genai.Client(api_key=self.api_key)
+            self._types = types
+            self._errors = errors
             self._initialized = True
             return True
         except Exception as e:
@@ -54,11 +58,7 @@ class GeminiSummarizer:
         # Prepare content for summarization
         content_text = self._prepare_content(items)
 
-        prompt = f"""You are a content curator creating a brief, engaging summary for a "{topic.display_name}" feed.
-
-Here are the latest items collected from various sources:
-
-{content_text}
+        system_instruction = f"""You are a content curator creating a brief, engaging summary for a "{topic.display_name}" feed.
 
 Please create a concise summary (2-4 paragraphs) that:
 1. Highlights the most interesting and relevant information
@@ -68,16 +68,26 @@ Please create a concise summary (2-4 paragraphs) that:
 5. Focuses on what's most valuable or actionable for the reader
 
 For quotes or facts, include the actual quote/fact with attribution.
-For news, summarize the key developments and their significance.
+For news, summarize the key developments and their significance."""
 
-Summary:"""
+        user_content = f"""Here are the latest items collected from various sources:
+
+{content_text}
+
+Please provide your summary:"""
 
         try:
             response = self.client.models.generate_content(
                 model='gemini-3-flash-preview',
-                contents=prompt
+                contents=user_content,
+                config=self._types.GenerateContentConfig(
+                    system_instruction=system_instruction
+                )
             )
             return response.text
+        except self._errors.APIError as e:
+            logger.error(f'Gemini API error: {e.code} - {e.message}')
+            return self._simple_summary(items, topic)
         except Exception as e:
             logger.error(f'Gemini summarization failed: {e}')
             return self._simple_summary(items, topic)
