@@ -58,23 +58,27 @@ class GeminiSummarizer:
         # Prepare content for summarization
         content_text = self._prepare_content(items)
 
-        system_instruction = f"""You are a content curator creating a brief, engaging summary for a "{topic.display_name}" feed.
+        system_instruction = f"""You are a content curator summarizing stories for a "{topic.display_name}" feed.
 
-Please create a concise summary (2-4 paragraphs) that:
-1. Highlights the most interesting and relevant information
-2. Connects related themes or stories where appropriate
-3. Maintains source attribution (mention where key information came from)
-4. Uses clear, accessible language
-5. Focuses on what's most valuable or actionable for the reader
+Create a bulleted list of the most interesting stories. Format each story EXACTLY like this:
 
-For quotes or facts, include the actual quote/fact with attribution.
-For news, summarize the key developments and their significance."""
+• **Short Title Here (3-15 words)**
+    A longer summary of the story content (30-200 words). Explain what happened, why it matters, and any key details. Use clear, accessible language.
+
+Rules:
+1. Use the bullet character • (not asterisks or dashes)
+2. Make the title bold using **double asterisks**
+3. Indent the summary content with 4 spaces
+4. Include up to 10 stories, prioritizing the most interesting/important
+5. Each story should be self-contained and informative
+6. For quotes, include the actual quote. For facts, state the fact clearly.
+7. Mention the source when relevant (e.g., "According to BBC..." or "Hacker News reports...")"""
 
         user_content = f"""Here are the latest items collected from various sources:
 
 {content_text}
 
-Please provide your summary:"""
+Provide your bulleted story summaries:"""
 
         try:
             response = self.client.models.generate_content(
@@ -121,25 +125,23 @@ Please provide your summary:"""
         Create a simple summary without AI.
         Used as fallback when Gemini is unavailable.
         """
-        summary_parts = [f"## {topic.display_name}\n"]
-        summary_parts.append(f"*{len(items)} items collected*\n")
+        summary_parts = []
 
-        # Group items by source
-        by_source = {}
-        for item in items:
+        for item in items[:10]:
+            title = item.title or 'Untitled'
             source_name = item.source.display_name if item.source else 'Unknown'
-            if source_name not in by_source:
-                by_source[source_name] = []
-            by_source[source_name].append(item)
+            content = item.content or ''
 
-        for source_name, source_items in by_source.items():
-            summary_parts.append(f"\n**From {source_name}:**")
-            for item in source_items[:5]:
-                title = item.title or 'Untitled'
-                if item.url:
-                    summary_parts.append(f"- [{title}]({item.url})")
-                else:
-                    summary_parts.append(f"- {title}")
+            # Truncate content if too long
+            if len(content) > 200:
+                content = content[:197] + '...'
+
+            # Build the story entry
+            summary_parts.append(f"• **{title}**")
+            if content:
+                summary_parts.append(f"    {content} (Source: {source_name})")
+            else:
+                summary_parts.append(f"    From {source_name}.")
 
         return '\n'.join(summary_parts)
 
