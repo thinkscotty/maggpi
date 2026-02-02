@@ -315,6 +315,17 @@ main {
     margin-bottom: 1rem;
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    margin-bottom: 0;
+}
+
 /* Tables */
 .admin-table {
     width: 100%;
@@ -475,6 +486,11 @@ main {
 .flash-error {
     background: #f8d7da;
     color: #842029;
+}
+
+.flash-info {
+    background: #cff4fc;
+    color: #055160;
 }
 
 /* Empty State */

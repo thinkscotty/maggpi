@@ -60,7 +60,15 @@ def add_topic():
     # Update config file
     save_topics_config()
 
-    flash(f'Topic "{display_name}" added successfully.', 'success')
+    # Auto-discover sources for the new topic
+    from app.services.source_discovery import discover_sources_for_new_topic
+    sources_created = discover_sources_for_new_topic(topic.id, count=5)
+    if sources_created > 0:
+        save_sources_config()
+        flash(f'Topic "{display_name}" added with {sources_created} auto-discovered sources.', 'success')
+    else:
+        flash(f'Topic "{display_name}" added. Add sources manually or use "Discover Sources".', 'success')
+
     return redirect(url_for('admin.topics_list'))
 
 
@@ -192,3 +200,20 @@ def refresh_topic(topic_name):
     run_topic_scraper(topic.id)
     flash(f'Refresh triggered for "{topic.display_name}".', 'success')
     return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/discover-sources', methods=['POST'])
+def discover_sources():
+    """Use AI to discover one additional source for each topic."""
+    from app.services.source_discovery import discover_additional_sources_for_all_topics
+
+    results = discover_additional_sources_for_all_topics()
+    total_added = sum(results.values())
+
+    if total_added > 0:
+        save_sources_config()
+        flash(f'Discovered {total_added} new source(s) across topics.', 'success')
+    else:
+        flash('No new sources discovered. Topics may already have good coverage.', 'info')
+
+    return redirect(url_for('admin.sources_list'))
