@@ -4,7 +4,7 @@ Admin routes for configuration and management.
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app import db
-from app.models import Topic, Source, SourceTopic, ScrapingLog
+from app.models import Topic, Source, SourceTopic, ScrapingLog, ContentItem, Summary
 from app.services.config_loader import save_topics_config, save_sources_config
 
 admin_bp = Blueprint('admin', __name__)
@@ -87,9 +87,17 @@ def toggle_topic(topic_id):
 
 @admin_bp.route('/topics/<int:topic_id>/delete', methods=['POST'])
 def delete_topic(topic_id):
-    """Delete a topic."""
+    """Delete a topic and all related records."""
     topic = Topic.query.get_or_404(topic_id)
     name = topic.display_name
+
+    # Delete related records first (foreign key constraints)
+    ContentItem.query.filter_by(topic_id=topic_id).delete()
+    Summary.query.filter_by(topic_id=topic_id).delete()
+    SourceTopic.query.filter_by(topic_id=topic_id).delete()
+    ScrapingLog.query.filter_by(topic_id=topic_id).delete()
+
+    # Now delete the topic
     db.session.delete(topic)
     db.session.commit()
     save_topics_config()
