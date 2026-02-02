@@ -18,7 +18,7 @@ class GeminiSummarizer:
 
     def __init__(self):
         self.api_key = Config.GEMINI_API_KEY
-        self.model = None
+        self.client = None
         self._initialized = False
 
     def _ensure_initialized(self):
@@ -31,9 +31,8 @@ class GeminiSummarizer:
             return False
 
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            from google import genai
+            self.client = genai.Client(api_key=self.api_key)
             self._initialized = True
             return True
         except Exception as e:
@@ -74,7 +73,10 @@ For news, summarize the key developments and their significance.
 Summary:"""
 
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model='gemini-3-flash-preview',
+                contents=prompt
+            )
             return response.text
         except Exception as e:
             logger.error(f'Gemini summarization failed: {e}')
